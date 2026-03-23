@@ -13,7 +13,7 @@ from aiogram.filters import Command
 
 
 # --- НАСТРОЙКИ ---
-TOKEN = "8429568936:AAGr-bADwYCLwylgP0etElzWlY3TLseDddM"
+TOKEN = "BOT_TOKEN"
 DB_FILE = "achievements.json"
 TARGET_CHAT_ID = -1003897619286   # ID  группы
 OWNER_ID = 7560933378
