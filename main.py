@@ -134,7 +134,66 @@ async def rem_warn(message: types.Message):
         warns[uid] -= 1
         await message.answer(f"✅ Варн снят. ({warns[uid]}/3)")
 
-@dp.message(Command("выход", prefix="."))
+import datetime # Нужно добавить в самый верх файла к импортам
+
+# --- КОМАНДА: МУТ (ПО РЕПЛАЮ) ---
+# Пример: .мут 10 (замутить на 10 минут) или просто .мут (навсегда)
+@dp.message(Command("мут", prefix="."))
+async def mute_user(message: types.Message):
+    # Проверка: только ты (OWNER) или админы
+    is_admin = (await bot.get_chat_member(message.chat.id, message.from_user.id)).status in ["administrator", "creator"]
+    if message.from_user.id != OWNER_ID and not is_admin:
+        return
+
+    if not message.reply_to_message:
+        return await message.reply("⚠️ Ответь этой командой на сообщение нарушителя!")
+
+    target_user = message.reply_to_message.from_user
+    args = message.text.split()
+    
+    until_date = None
+    time_text = "навсегда"
+
+    # Если указано время (например, .мут 15)
+    if len(args) > 1 and args[1].isdigit():
+        minutes = int(args[1])
+        until_date = datetime.datetime.now() + datetime.timedelta(minutes=minutes)
+        time_text = f"на {minutes} мин."
+
+    try:
+        await bot.restrict_chat_member(
+            chat_id=message.chat.id,
+            user_id=target_user.id,
+            permissions=ChatPermissions(can_send_messages=False), # Запрещаем всё
+            until_date=until_date
+        )
+        await message.answer(f"🤐 Пользователь {target_user.first_name} отправлен в архив {time_text}.")
+    except Exception as e:
+        await message.reply(f"❌ Не удалось выдать мут: {e}")
+
+# --- КОМАНДА: РАЗМУТ ---
+@dp.message(Command("размут", prefix="."))
+async def unmute_user(message: types.Message):
+    if message.from_user.id != OWNER_ID: return
+    if not message.reply_to_message: return
+
+    try:
+        await bot.restrict_chat_member(
+            chat_id=message.chat.id,
+            user_id=message.reply_to_message.from_user.id,
+            permissions=ChatPermissions(
+                can_send_messages=True,
+                can_send_media_messages=True,
+                can_send_other_messages=True,
+                can_add_web_page_previews=True
+            ),
+            use_independent_chat_permissions=True
+        )
+        await message.answer(f"🔊 {message.reply_to_message.from_user.first_name} снова в строю!")
+    except:
+        pass
+
+@dp.message(Command("офф", prefix="."))
 async def shutdown_bot(message: types.Message):
     # Проверяем, совпадает ли ID отправителя с твоим
     if message.from_user.id != OWNER_ID:
