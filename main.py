@@ -17,6 +17,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 DB_FILE = "achievements.json"
 TARGET_CHAT_ID = -1003897619286   # ID  группы
 OWNER_ID = 7560933378
+GIGA_KEY = os.getenv("GIGACHAT_CREDENTIALS")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
